@@ -12,4 +12,9 @@ if you don't have ffmpeg installed run the command below
 sudo apt install ffmpeg
 ```
 
+to run the app you can use the command below in the root directory
+```bash
+go run .
+```
+
 clone the client app from [bumflixweb](https://github.com/nmktad/bumflixweb) and run it to see the stream in a nextjs web app
