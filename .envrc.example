@@ -3,7 +3,7 @@ export AWS_SECRET_ACCESS_KEY=
 export AWS_DEFAULT_REGION=
 export AWS_S3_LOCALSTACK_ENDPOINT=
 
-# might not be needed
+# this variable might not be needed
 export LOCALSTACK_AUTH_TOKEN=
 
 export TF_VAR_aws_access_key=${AWS_ACCESS_KEY_ID}
