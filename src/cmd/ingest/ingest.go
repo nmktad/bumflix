@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/nmktad/bumflix/pkg/ffmpeg"
-	S3 "github.com/nmktad/bumflix/pkg/s3"
+	"github.com/nmktad/bumflix/src/internal/ffmpeg"
+	S3 "github.com/nmktad/bumflix/src/internal/s3"
 )
 
 func IngestExample(movieTitle, path string) error {

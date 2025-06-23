@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	s3Client "github.com/nmktad/bumflix/pkg/s3"
+	s3Client "github.com/nmktad/bumflix/src/internal/s3"
 )
 
 func main() {
