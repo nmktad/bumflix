@@ -37,15 +37,15 @@ func IngestExample(movieTitle, path string) error {
 		// {Name: "2160p", Width: 3840, Height: 2160, BitrateK: 8000, OutputDir: filepath.Join(baseOutput, "2160p")},
 	}
 
-	err := ffmpeg.GenerateHLSVariants(path, variants)
-	if err != nil {
-		log.Fatal("Transcoding failed:", err)
-	}
-
-	err = ffmpeg.WriteMasterPlaylist(baseOutput, variants)
-	if err != nil {
-		log.Fatal("Failed to write master.m3u8:", err)
-	}
+	// err := ffmpeg.GenerateHLSVariants(path, variants)
+	// if err != nil {
+	// 	log.Fatal("Transcoding failed:", err)
+	// }
+	//
+	// err = ffmpeg.WriteMasterPlaylist(baseOutput, variants)
+	// if err != nil {
+	// 	log.Fatal("Failed to write master.m3u8:", err)
+	// }
 
 	u, err := S3.New(os.Getenv("AWS_S3_BUCKET_NAME"))
 	if err != nil {

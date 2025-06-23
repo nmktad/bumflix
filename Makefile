@@ -1,7 +1,7 @@
 APP_NAME="bumflix"
 
 build:
-	@go build -o bin/$(APP_NAME) cmd/api/main.go
+	@go build -o bin/$(APP_NAME) src/cmd/api/main.go
 
 run: build
 	@./bin/$(APP_NAME)

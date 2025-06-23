@@ -11,6 +11,10 @@ import (
 )
 
 func main() {
+	// err := ingest.IngestExample("Hotel-Chevalier_2007.mp4", filepath.Join("local-movies", "Hotel-Chevalier_2007.mp4"))
+	// if err != nil {
+	// 	panic("err no movies ingested")
+	// }
 	http.HandleFunc("/", serveHLS)
 
 	// Route to serve video content
