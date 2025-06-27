@@ -1,11 +1,9 @@
 package transcoder
 
 import (
-	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
-
-	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
 type Variant struct {
@@ -16,43 +14,34 @@ type Variant struct {
 	OutputDir string
 }
 
-func GenerateHLSVariants(input string, variants []Variant) error {
-	for _, v := range variants {
-		outputPath := fmt.Sprintf("%s/index.m3u8", v.OutputDir)
-
-		err := ffmpeg.Input(input).
-			Filter("scale", ffmpeg.Args{fmt.Sprint(v.Width), fmt.Sprint(v.Height)}).
-			Output(outputPath,
-				ffmpeg.KwArgs{
-					"c:v":                  "libx264",
-					"b:v":                  fmt.Sprintf("%dk", v.BitrateK),
-					"c:a":                  "aac",
-					"hls_time":             6,
-					"hls_playlist_type":    "vod",
-					"hls_segment_filename": fmt.Sprintf("%s/segment_%%03d.ts", v.OutputDir),
-					"f":                    "hls",
-				}).
-			OverWriteOutput().
-			Run()
-		if err != nil {
-			return fmt.Errorf("failed for %s: %w", v.Name, err)
-		}
-	}
-	return nil
-}
-
-func WriteMasterPlaylist(outputDir string, variants []Variant) error {
-	var builder string
-	builder += "#EXTM3U\n"
-
-	for _, v := range variants {
-		line := fmt.Sprintf(
-			"#EXT-X-STREAM-INF:BANDWIDTH=%d,RESOLUTION=%dx%d\n%s/index.m3u8\n",
-			v.BitrateK*1000, v.Width, v.Height, v.Name,
-		)
-		builder += line
+func GenerateHLSVariants(input, output string) error {
+	args := []string{
+		"-i", input,
+		"-filter_complex",
+		"[0:v]split=3[v1][v2][v3];" +
+			"[v1]scale=w=1920:h=1080[v1out];" +
+			"[v2]scale=w=1280:h=720[v2out];" +
+			"[v3]scale=w=854:h=480[v3out]",
+		"-map", "[v1out]", "-c:v:0", "libx264", "-b:v:0", "5000k", "-maxrate:v:0", "5350k", "-bufsize:v:0", "7500k",
+		"-map", "[v2out]", "-c:v:1", "libx264", "-b:v:1", "2800k", "-maxrate:v:1", "2996k", "-bufsize:v:1", "4200k",
+		"-map", "[v3out]", "-c:v:2", "libx264", "-b:v:2", "1400k", "-maxrate:v:2", "1498k", "-bufsize:v:2", "2100k",
+		"-map", "a:0", "-c:a", "aac", "-b:a:0", "192k", "-ac", "2",
+		"-map", "a:0", "-c:a", "aac", "-b:a:1", "128k", "-ac", "2",
+		"-map", "a:0", "-c:a", "aac", "-b:a:2", "96k", "-ac", "2",
+		"-f", "hls",
+		"-hls_time", "10",
+		"-hls_playlist_type", "vod",
+		"-hls_flags", "independent_segments",
+		"-hls_segment_type", "mpegts",
+		"-hls_segment_filename", filepath.Join(output, "stream_%v/data%03d.ts"),
+		"-master_pl_name", "master.m3u8",
+		"-var_stream_map", "v:0,a:0 v:1,a:1 v:2,a:2",
+		filepath.Join(output, "stream_%v/playlist.m3u8"),
 	}
 
-	masterPath := filepath.Join(outputDir, "master.m3u8")
-	return os.WriteFile(masterPath, []byte(builder), 0644)
+	cmd := exec.Command("ffmpeg", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
 }

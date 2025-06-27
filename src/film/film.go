@@ -1,6 +1,6 @@
 package film
 
 type Film struct {
-	Title string
-	Slug  string
+	Title string `json:"title"`
+	Slug  string `json:"slug"`
 }

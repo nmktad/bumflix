@@ -30,9 +30,17 @@ func New() (*s3.Client, error) {
 }
 
 func UploadDir(localPath, remotePrefix, bucket string) error {
+	client, err := New()
+	if err != nil {
+		return fmt.Errorf("failed to initialize S3 client: %w", err)
+	}
+
 	return filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
+		if err != nil {
 			return err
+		}
+		if info.IsDir() {
+			return nil
 		}
 
 		var contentType string
@@ -46,17 +54,17 @@ func UploadDir(localPath, remotePrefix, bucket string) error {
 		}
 
 		rel, _ := filepath.Rel(localPath, path)
-		key := filepath.ToSlash(filepath.Join(remotePrefix, rel)) // always use `/` for S3
+		key := filepath.ToSlash(filepath.Join(remotePrefix, rel))
 
 		file, err := os.Open(path)
 		if err != nil {
 			return fmt.Errorf("failed to open %s: %w", path, err)
 		}
-
-		client, err := New()
-		if err != nil {
-			log.Fatal(err)
-		}
+		defer func() {
+			if cerr := file.Close(); cerr != nil {
+				fmt.Fprintf(os.Stderr, "warning: failed to close file %s: %v\n", path, cerr)
+			}
+		}()
 
 		_, err = client.PutObject(context.TODO(), &s3.PutObjectInput{
 			Bucket:      aws.String(bucket),
@@ -65,21 +73,65 @@ func UploadDir(localPath, remotePrefix, bucket string) error {
 			ContentType: aws.String(contentType),
 		})
 		if err != nil {
-			if cerr := file.Close(); cerr != nil {
-				fmt.Fprintf(os.Stderr, "warning: failed to close file %s: %v\n", path, cerr)
-			}
-
 			return fmt.Errorf("upload failed for %s: %w", key, err)
-		}
-
-		if cerr := file.Close(); cerr != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to close file %s: %v\n", path, cerr)
 		}
 
 		fmt.Println("✅ Uploaded:", key)
 		return nil
 	})
 }
+
+// func UploadDir(localPath, remotePrefix, bucket string) error {
+// 	return filepath.Walk(localPath, func(path string, info os.FileInfo, err error) error {
+// 		if err != nil || info.IsDir() {
+// 			return err
+// 		}
+//
+// 		var contentType string
+// 		switch filepath.Ext(info.Name()) {
+// 		case ".m3u8":
+// 			contentType = "application/vnd.apple.mpegurl"
+// 		case ".ts":
+// 			contentType = "video/mp2t"
+// 		default:
+// 			contentType = "application/octet-stream"
+// 		}
+//
+// 		rel, _ := filepath.Rel(localPath, path)
+// 		key := filepath.ToSlash(filepath.Join(remotePrefix, rel)) // always use `/` for S3
+//
+// 		file, err := os.Open(path)
+// 		if err != nil {
+// 			return fmt.Errorf("failed to open %s: %w", path, err)
+// 		}
+//
+// 		client, err := New()
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+//
+// 		_, err = client.PutObject(context.TODO(), &s3.PutObjectInput{
+// 			Bucket:      aws.String(bucket),
+// 			Key:         aws.String(key),
+// 			Body:        file,
+// 			ContentType: aws.String(contentType),
+// 		})
+// 		if err != nil {
+// 			if cerr := file.Close(); cerr != nil {
+// 				fmt.Fprintf(os.Stderr, "warning: failed to close file %s: %v\n", path, cerr)
+// 			}
+//
+// 			return fmt.Errorf("upload failed for %s: %w", key, err)
+// 		}
+//
+// 		if cerr := file.Close(); cerr != nil {
+// 			fmt.Fprintf(os.Stderr, "warning: failed to close file %s: %v\n", path, cerr)
+// 		}
+//
+// 		fmt.Println("✅ Uploaded:", key)
+// 		return nil
+// 	})
+// }
 
 func UploadFile(localPath, remoteKey, contentType, bucket string) error {
 	file, err := os.Open(localPath)

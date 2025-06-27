@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/nmktad/bumflix/internal/s3client"
 	"github.com/nmktad/bumflix/src/film"
 	"github.com/nmktad/bumflix/src/ingest"
@@ -39,8 +40,17 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"}, // frontend origin
+		AllowedMethods:   []string{"GET", "POST", "HEAD", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Location"}, // optional
+		AllowCredentials: true,
+		MaxAge:           300, // 5 min
+	}))
 
 	r.Get("/films", listVideosHandler(client, hls_bucket))
+	r.Head("/film/{slug}", getMasterPlaylistHandler(client, hls_bucket))
 	r.Get("/film/{slug}", getMasterPlaylistHandler(client, hls_bucket))
 
 	fmt.Println("Listening on :8080")
