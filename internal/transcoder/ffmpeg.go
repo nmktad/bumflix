@@ -2,6 +2,8 @@ package transcoder
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
@@ -37,4 +39,20 @@ func GenerateHLSVariants(input string, variants []Variant) error {
 		}
 	}
 	return nil
+}
+
+func WriteMasterPlaylist(outputDir string, variants []Variant) error {
+	var builder string
+	builder += "#EXTM3U\n"
+
+	for _, v := range variants {
+		line := fmt.Sprintf(
+			"#EXT-X-STREAM-INF:BANDWIDTH=%d,RESOLUTION=%dx%d\n%s/index.m3u8\n",
+			v.BitrateK*1000, v.Width, v.Height, v.Name,
+		)
+		builder += line
+	}
+
+	masterPath := filepath.Join(outputDir, "master.m3u8")
+	return os.WriteFile(masterPath, []byte(builder), 0644)
 }
