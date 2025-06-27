@@ -80,3 +80,30 @@ func UploadDir(localPath, remotePrefix, bucket string) error {
 		return nil
 	})
 }
+
+func UploadFile(localPath, remoteKey, contentType, bucket string) error {
+	file, err := os.Open(localPath)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to close file %s: %v\n", localPath, cerr)
+		}
+	}()
+
+	client, err := New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = client.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:      aws.String(bucket),
+		Key:         &remoteKey,
+		Body:        file,
+		ContentType: &contentType,
+	})
+
+	return err
+}

@@ -12,8 +12,8 @@ import (
 )
 
 func IngestExample() error {
-	movieFile := "La-Jetee.mp4"
-	// inputPath := filepath.Join("local-movies", movieFile)
+	movieFile := "Hotel-Chevalier_2007.mp4"
+	inputPath := filepath.Join("local-movies", movieFile)
 
 	movieID := strings.ToLower(
 		strings.ReplaceAll(
@@ -37,17 +37,12 @@ func IngestExample() error {
 		{Name: "480p", Width: 854, Height: 480, BitrateK: 800, OutputDir: filepath.Join(baseOutput, "480p")},
 		{Name: "720p", Width: 1280, Height: 720, BitrateK: 1500, OutputDir: filepath.Join(baseOutput, "720p")},
 		{Name: "1080p", Width: 1920, Height: 1080, BitrateK: 3000, OutputDir: filepath.Join(baseOutput, "1080p")},
-		{Name: "2160p", Width: 3840, Height: 2160, BitrateK: 8000, OutputDir: filepath.Join(baseOutput, "2160p")},
+		// {Name: "2160p", Width: 3840, Height: 2160, BitrateK: 8000, OutputDir: filepath.Join(baseOutput, "2160p")},
 	}
 
-	// err := transcoder.GenerateHLSVariants(inputPath, variants)
-	// if err != nil {
-	// 	log.Fatal("Transcoding failed:", err)
-	// }
-
-	u, err := s3client.New()
+	err := transcoder.GenerateHLSVariants(inputPath, variants)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Transcoding failed:", err)
 	}
 
 	for _, v := range variants {
@@ -58,7 +53,7 @@ func IngestExample() error {
 			}
 		}
 
-		err := u.UploadDir(v.OutputDir, fmt.Sprintf("la-jetee/%s", v.Name))
+		err := s3client.UploadDir(v.OutputDir, fmt.Sprintf("la-jetee/%s", v.Name), os.Getenv("AWS_S3_HLS_BUCKET_NAME"))
 		if err != nil {
 			log.Fatal("Upload failed:", err)
 		}

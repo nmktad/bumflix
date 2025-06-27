@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -13,9 +15,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/nmktad/bumflix/internal/s3client"
+	"github.com/nmktad/bumflix/src/film"
+	"github.com/nmktad/bumflix/src/ingest"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func main() {
+	err := ingest.IngestExample()
+	if err != nil {
+		log.Fatalf("failed to create s3 client: %v", err)
+	}
+
 	client, err := s3client.New()
 	if err != nil {
 		log.Fatalf("failed to create s3 client: %v", err)
@@ -45,20 +56,33 @@ func listVideosHandler(client *s3.Client, bucket string) http.HandlerFunc {
 			Bucket:    &bucket,
 			Delimiter: aws.String("/"),
 		})
+
+		fmt.Println(resp)
 		if err != nil {
-			http.Error(w, "Could not list videos", http.StatusInternalServerError)
+			http.Error(w, "Could not list videos", http.StatusNotFound)
 			return
 		}
 
-		var titles []string
+		caser := cases.Title(language.English)
+
+		films := make([]film.Film, 0)
+
 		for _, prefix := range resp.CommonPrefixes {
-			titles = append(titles, *prefix.Prefix)
+			if prefix.Prefix == nil {
+				continue
+			}
+			slug := strings.TrimSuffix(*prefix.Prefix, "/")
+			title := strings.ReplaceAll(slug, "-", " ") // naive title formatting
+
+			films = append(films, film.Film{
+				Title: caser.String(title),
+				Slug:  slug,
+			})
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-
-		if _, err := w.Write([]byte(fmt.Sprintf(`{"videos": %q}`, titles))); err != nil {
-			http.Error(w, "Failed to presign URL", http.StatusInternalServerError)
+		if err := json.NewEncoder(w).Encode(map[string][]film.Film{"videos": films}); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		}
 	}
 }
