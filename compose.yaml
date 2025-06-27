@@ -1,4 +1,23 @@
 services:
+  database:
+    container_name: database
+    image: postgres:latest
+    restart: unless-stopped
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=bumflix-db
+      - POSTGRES_USER=bumflix
+      - POSTGRES_PASSWORD=password
+    ports:
+      - 5432:5432
+    healthcheck:
+      # specifying user and database is needed to avoid `FATAL:  role "root" does not exist`
+      # spam in the logs
+      test: ['CMD', 'pg_isready']
+      interval: 5s
+      timeout: 2s
+      retries: 20
   localstack:
     container_name: "${LOCALSTACK_DOCKER_NAME:-bumflix-localstack-main}"
     image: localstack/localstack

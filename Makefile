@@ -1,10 +1,15 @@
 APP_NAME="bumflix"
 
 build:
-	@go build -o bin/$(APP_NAME) cmd/api/main.go
+	@go build -o bin/$(APP_NAME) src/api/main.go
 
-run: build
-	@./bin/$(APP_NAME)
+run: run-web && run-api
+
+run-api:
+	@air --build.cmd "go build -o bin/api src/api/main.go" --build.bin "./bin/api"
+
+run-web:
+	@cd src/web && pnpm dev
 
 clean:
 	@rm -rf bin
@@ -12,6 +17,9 @@ clean:
 
 test:
 	@go test -v ./...
+
+start-services:
+	@docker compose up -d
 
 # generate password using openssl
 # Change password of MINIO_PASSWORD & POSTGRES_PASSWORD in .env file
