@@ -17,16 +17,15 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/nmktad/bumflix/internal/s3client"
 	"github.com/nmktad/bumflix/src/film"
-	"github.com/nmktad/bumflix/src/ingest"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 func main() {
-	err := ingest.IngestExample()
-	if err != nil {
-		log.Fatalf("failed to create s3 client: %v", err)
-	}
+	// err := ingest.IngestExample()
+	// if err != nil {
+	// 	log.Fatalf("failed to create s3 client: %v", err)
+	// }
 
 	client, err := s3client.New()
 	if err != nil {

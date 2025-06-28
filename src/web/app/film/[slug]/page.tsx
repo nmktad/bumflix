@@ -15,12 +15,12 @@ export default async function FilmViewPage({
   const { slug } = await params;
 
   return (
-    <MediaPlayer playsInline src={`http://localhost:8080/film/${slug}`}>
+    <MediaPlayer
+      playsInline
+      src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/film/${slug}`}
+    >
       <MediaProvider />
-      <PlyrLayout
-        thumbnails="https://files.vidstack.io/sprite-fight/thumbnails.vtt"
-        icons={plyrLayoutIcons}
-      />
+      <PlyrLayout icons={plyrLayoutIcons} />
     </MediaPlayer>
   );
 }

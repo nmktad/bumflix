@@ -1,0 +1,116 @@
+# Go build artifacts
+/bumflix
+*.exe
+*.out
+*.test
+
+# Go vendor folder (if vendoring)
+vendor/
+
+# Build and media output
+/output/
+/local-movies/
+/tmp/
+.bin/
+bin/
+.docker_volume/
+.db/
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# SQLC gen output (if not needed in container)
+sqlc.yaml
+db/
+
+# Editor/IDE settings
+.idea/
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*.swn
+
+# OS-generated
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Logs and runtime data
+*.log
+*.tmp
+.envrc
+.envrc.example
+.air.toml
+
+# Node/npm (if colocated Next.js frontend in /src or elsewhere)
+node_modules/
+.next/
+*.tsbuildinfo
+npm-debug.log
+
+# Docker/dev artifacts
+Dockerfile
+compose.yaml
+Makefile
+.dockerignore
+.editorconfig
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+/bumflix
+*.out
+
+# Build & output directories
+/output
+/build
+/dist
+
+# Local movies
+/local-movies
+
+# Temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# IDE/editor configs
+.vscode/
+.idea/
+*.code-workspace
+
+# Docker artifacts
+Dockerfile
+compose.yaml
+
+# Terraform state
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Node/npm (if Next.js frontend is colocated)
+node_modules
+.next
+npm-debug.log
+
+# Test cache
+**/__pycache__/
+**/testdata
+coverage.out

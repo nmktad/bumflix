@@ -21,7 +21,7 @@ variable "aws_default_region" {
   type = string
 }
 
-variable "aws_s3_localstack_endpoint" {
+variable "aws_endpoint_url_s3" {
   type = string
 }
 
@@ -45,7 +45,7 @@ provider "aws" {
   skip_requesting_account_id  = true
 
   endpoints {
-    s3 = var.aws_s3_localstack_endpoint
+    s3 = var.aws_endpoint_url_s3
   }
 }
 

@@ -25,7 +25,7 @@ func New() (*s3.Client, error) {
 
 	return s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.Region = os.Getenv("AWS_DEFAULT_REGION")
-		o.BaseEndpoint = aws.String(os.Getenv("AWS_S3_LOCALSTACK_ENDPOINT"))
+		o.BaseEndpoint = aws.String(os.Getenv("AWS_ENDPOINT_URL_S3"))
 	}), nil
 }
 
