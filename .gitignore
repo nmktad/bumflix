@@ -1,0 +1,37 @@
+# Ignore environment-specific files
+.envrc
+
+# localstack directory
+.volume/
+
+# Local .terraform directories
+**/.terraform/*
+
+# Local state files
+*.tfstate
+*.tfstate.*
+
+# saved execution plans by default
+*.tfplan
+tfplan
+
+# Ignore all variable definition files
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+*.auto.tfvars.json
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfoverride
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Crash logs and execution failure reports
+crash.log
+crash.*.log
