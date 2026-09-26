@@ -1,6 +1,9 @@
 # Ignore environment-specific files
 .envrc
 
+# movies folder
+films/
+
 # localstack directory
 .volume/
 
