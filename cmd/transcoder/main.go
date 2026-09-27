@@ -61,7 +61,15 @@ func main() {
 
 		var record = s3event.Records[0]
 
-		filename := filepath.Base(record.S3.Object.Key)
+		rawKey := record.S3.Object.Key
+
+		key, err := utils.DecodeS3Key(rawKey)
+		if err != nil {
+			fmt.Printf("failed to decode key %v: %v\n", rawKey, err)
+			continue
+		}
+
+		filename := filepath.Base(key)
 
 		file, err := os.CreateTemp("", filename)
 
@@ -73,7 +81,7 @@ func main() {
 		defer os.Remove(file.Name())
 		defer file.Close()
 
-		storage.GetObject(context.Background(), record.S3.Object.Key, record.S3.Bucket.Name, file)
+		storage.GetObject(context.Background(), key, record.S3.Bucket.Name, file)
 
 		absPath, err := filepath.Abs(file.Name())
 
@@ -82,13 +90,16 @@ func main() {
 			return
 		}
 
+		title := utils.MovieName(key)
+		prefix := utils.Slugify(key)
+
 		outDir, err := transcoder.ProcessVideoForHLSStreaming(context.Background(), absPath)
 		if err != nil {
 			fmt.Printf("hls video process failed: %v", err)
 			return
 		}
 
-		storage.UploadDir(context.Background(), outDir, "bumflix-hls-segments", utils.MovieName(record.S3.Object.Key))
+		storage.UploadDir(context.Background(), outDir, "bumflix-hls-segments", prefix)
 
 		ctx := context.Background()
 
@@ -111,8 +122,8 @@ func main() {
 		fmt.Println("creating the movie entry in db")
 
 		movie, err := queries.CreateMovie(ctx, databse.CreateMovieParams{
-			Title: utils.MovieName(record.S3.Object.Key),
-			Prefix: utils.MovieName(record.S3.Object.Key),
+			Title: title,
+			Prefix: prefix,
 			Description: pgtype.Text{
 				String: "an amazing movie",
 				Valid: true,

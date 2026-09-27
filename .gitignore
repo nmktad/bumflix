@@ -3,9 +3,11 @@
 
 # movies folder
 films/
+bin/
 
 # localstack directory
 .volume/
+
 
 # Local .terraform directories
 **/.terraform/*
