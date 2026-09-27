@@ -12,6 +12,9 @@ type Config struct {
 	AWSDefaultRegion string `env:"AWS_DEFAULT_REGION"`
 	AWSS3Endpoint string `env:"AWS_S3_ENDPOINT"`
 	AWSEndpoint string `env:"AWS_ENDPOINT"`
+	PGUser string `env:"POSTGRES_USER"`
+	PGPassword string `env:"POSTGRES_PASSWORD"`
+	PGDatabse string `env:"POSTGRES_DB"`
 }
 
 var cfg *Config

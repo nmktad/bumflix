@@ -7,7 +7,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/nmktad/bumflix/internal/config"
+	databse "github.com/nmktad/bumflix/internal/database"
 	"github.com/nmktad/bumflix/internal/queue"
 	"github.com/nmktad/bumflix/internal/storage"
 	"github.com/nmktad/bumflix/internal/transcoder"
@@ -87,10 +90,50 @@ func main() {
 
 		storage.UploadDir(context.Background(), outDir, "bumflix-hls-segments", utils.MovieName(record.S3.Object.Key))
 
+		ctx := context.Background()
+
+		cfg, err := config.LoadConfig()
+		if err != nil {
+			fmt.Printf("error reading config: %v", err)
+			return
+		}
+
+		conn, err := pgx.Connect(ctx, fmt.Sprintf("postgresql://%s:%s@localhost:5432/%s?sslmode=disable", cfg.PGUser, cfg.PGPassword, cfg.PGDatabse))
+		if err != nil {
+			fmt.Printf("can't connect to db: %v", err)
+			return 
+		}
+
+		defer conn.Close(ctx)
+
+		queries := databse.New(conn)
+
+		fmt.Println("creating the movie entry in db")
+
+		movie, err := queries.CreateMovie(ctx, databse.CreateMovieParams{
+			Title: utils.MovieName(record.S3.Object.Key),
+			Prefix: utils.MovieName(record.S3.Object.Key),
+			Description: pgtype.Text{
+				String: "an amazing movie",
+				Valid: true,
+			},
+		})
+
+		if err != nil {
+			fmt.Printf("error creating a movie %v", err)
+			return 
+		} else {
+			fmt.Println("created the movie entry in db")
+			fmt.Printf("movie: %v", movie)
+		}
+
 		queue.DeleteMessage(
 			context.Background(), 
 			fmt.Sprintf("http://sqs.%s.localhost.localstack.cloud:4566/000000000000/bumflix-transcode", cfg.AWSDefaultRegion), 
 			*message,
 			)
+
+	 
+		fmt.Println("finished the process movie ready")
 	}
 }
