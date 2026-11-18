@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	SourceBucketName string `env:"SOURCE_BUCKET_NAME"`
+	SourceBucketName string `env:"SRC_BUCKET_NAME"`
 	DestBucketName string `env:"DEST_BUCKET_NAME"`
 	AWSDefaultRegion string `env:"AWS_DEFAULT_REGION"`
 	AWSS3Endpoint string `env:"AWS_S3_ENDPOINT"`
